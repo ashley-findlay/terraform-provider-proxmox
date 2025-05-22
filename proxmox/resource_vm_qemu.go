@@ -651,6 +651,30 @@ func resourceVmQemuCreate(ctx context.Context, d *schema.ResourceData, meta inte
 		return diags
 	}
 
+	// Only assign a new VMID if one is not specified
+    if d.Get(vmID.Root).(int) == 0 {
+        poolName := d.Get(pool.Root).(string)
+        poolInfo, err := client.GetPool(ctx, poolName)
+        if err != nil {
+            return diag.FromErr(fmt.Errorf("failed to query pool %%s for VMID assignment: %%w", poolName, err))
+        }
+
+        maxID := 100 // start from a baseline
+        for _, member := range poolInfo.Members {
+            if strings.HasPrefix(member.Type, "qemu") || strings.HasPrefix(member.Type, "lxc") {
+                if id, err := strconv.Atoi(member.ID); err == nil && id > maxID {
+                    maxID = id
+                }
+            }
+        }
+
+        nextID := maxID + 1
+        if err := d.Set(vmID.Root, nextID); err != nil {
+            return diag.FromErr(fmt.Errorf("failed to assign VMID from pool scan: %%w", err))
+        }
+        logger.Info().Int("assigned_vmid", nextID).Msg("Auto-assigned next VMID from pool members")
+    }
+
 	if len(qemuVgaList) > 0 {
 		config.QemuVga = qemuVgaList[0].(map[string]interface{})
 	}
