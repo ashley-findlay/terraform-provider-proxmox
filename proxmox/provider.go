@@ -226,28 +226,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	}
 
 	// permission check
-	minimumPermissions := []string{
-		"Datastore.AllocateSpace",
-		"Datastore.Audit",
-		"Pool.Allocate",
-		"Sys.Audit",
-		"Sys.Console",
-		"Sys.Modify",
-		"VM.Allocate",
-		"VM.Audit",
-		"VM.Clone",
-		"VM.Config.CDROM",
-		"VM.Config.Cloudinit",
-		"VM.Config.CPU",
-		"VM.Config.Disk",
-		"VM.Config.HWType",
-		"VM.Config.Memory",
-		"VM.Config.Network",
-		"VM.Config.Options",
-		"VM.Migrate",
-		"VM.Monitor",
-		"VM.PowerMgmt",
-	}
+	minimumPermissions := []string{}
 	var id string
 	if result, getok := d.GetOk(schemaPmApiTokenID); getok {
 		id = result.(string)
